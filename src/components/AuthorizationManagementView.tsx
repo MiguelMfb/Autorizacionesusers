@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Menu } from '@headlessui/react';
-import { Search, ArrowUpDown, CheckCircle2, XCircle, Plus, Download, X, MoreVertical, Eye, Edit } from 'lucide-react';
+import {
+  Search,
+  ArrowUpDown,
+  CheckCircle2,
+  XCircle,
+  Plus,
+  Download,
+  X,
+  MoreVertical,
+  Eye,
+  Edit,
+  FileSpreadsheet,
+  FileText
+} from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { Authorization, FetchAuthorizationsParams, Option } from '../types';
@@ -297,6 +310,59 @@ const AuthorizationManagementView: React.FC = () => {
     });
   };
 
+  // Data export helpers
+  const exportData = (delimiter: string, fileExtension: string) => {
+    const headers = [
+      'Código único',
+      'Nombre',
+      'Identificación',
+      'Volante',
+      'Mipres',
+      'Ciudad A',
+      'Ciudad B',
+      'Cantidad servicios autorizados',
+      'Cantidad servicios restantes',
+      'Fecha inicio vigencia',
+      'Fecha fin vigencia',
+      'Dependencia',
+      'Estado vigencia',
+      'Empresa Prestadora'
+    ];
+
+    const rows = authorizations.map(auth => [
+      auth.codigoUnico,
+      auth.nombreCompleto,
+      auth.identificacion,
+      auth.volante,
+      auth.mipres,
+      getCityLabel(auth.ciudadA),
+      getCityLabel(auth.ciudadB),
+      auth.cantidadS.toString(),
+      auth.sRestantes.toString(),
+      formatDate(auth.fechaInicioVigencia),
+      formatDate(auth.fechaFinVigencia),
+      auth.dependencia,
+      auth.vigenciaStatus,
+      auth.empresaPrestadorServicio
+    ]);
+
+    const content = [headers.join(delimiter), ...rows.map(r => r.join(delimiter))].join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `autorizaciones_${new Date().toISOString().split('T')[0]}.${fileExtension}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  const handleExportExcel = () => exportData(',', 'csv');
+
+  const handleExportPlainFile = () => exportData('|', 'txt');
+
   // Render detail view
   if (currentView === 'detail' && selectedAuthorizationId) {
     return (
@@ -470,7 +536,25 @@ const AuthorizationManagementView: React.FC = () => {
           </button>
         </div>
       </div>
-      
+
+      {/* Export Buttons */}
+      <div className="mt-4 flex justify-end gap-3">
+        <button
+          onClick={handleExportExcel}
+          className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          title="Exportar a Excel"
+        >
+          <FileSpreadsheet size={18} />
+        </button>
+        <button
+          onClick={handleExportPlainFile}
+          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          title="Exportar archivo plano"
+        >
+          <FileText size={18} />
+        </button>
+      </div>
+
       {/* Table Section */}
       <div className="mt-6">
         {error && (
