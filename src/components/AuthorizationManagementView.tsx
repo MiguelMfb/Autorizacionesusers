@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Menu } from '@headlessui/react';
 import { Search, ArrowUpDown, CheckCircle2, XCircle, Plus, Download, X, MoreVertical, Eye, Edit } from 'lucide-react';
 import DatePicker from 'react-datepicker';
@@ -8,7 +8,7 @@ import { fetchAuthorizations, dependenciasList, getCityLabel, empresaOptions } f
 import CreateAuthorizationModal from './CreateAuthorizationModal';
 import AuthorizationDetailView from './AuthorizationDetailView';
 import CancelCodeModal from './CancelCodeModal';
-import EditCodeModal from './EditCodeModal';
+import EditCodesModal from './EditCodesModal';
 import "react-datepicker/dist/react-datepicker.css";
 
 const vigenciaOptions: Option[] = [
@@ -57,10 +57,22 @@ const AuthorizationManagementView: React.FC = () => {
 
   // Edit code modal state
   const [selectedAuthForEdit, setSelectedAuthForEdit] = useState<Authorization | null>(null);
-  const [isEditCodeModalOpen, setIsEditCodeModalOpen] = useState(false);
+  const [isEditCodesModalOpen, setIsEditCodesModalOpen] = useState(false);
 
   // Available unique codes options
-  const codigoOptions = Array.from(new Set(authorizations.map(a => a.codigoUnico))).map(code => ({ value: code, label: code }));
+  const availableCodes = useMemo(() => {
+    const codesByUser: Record<string, Option[]> = {};
+    authorizations.forEach(auth => {
+      const id = auth.identificacion;
+      if (!codesByUser[id]) {
+        codesByUser[id] = [];
+      }
+      if (!codesByUser[id].some(opt => opt.value === auth.codigoUnico)) {
+        codesByUser[id].push({ value: auth.codigoUnico, label: auth.codigoUnico });
+      }
+    });
+    return codesByUser;
+  }, [authorizations]);
   
   // Load authorizations
   const loadAuthorizations = useCallback(async () => {
@@ -227,7 +239,7 @@ const AuthorizationManagementView: React.FC = () => {
 
   const handleEditAuthorization = (authorization: Authorization) => {
     setSelectedAuthForEdit(authorization);
-    setIsEditCodeModalOpen(true);
+    setIsEditCodesModalOpen(true);
   };
 
   const handleSaveCodeEdit = (data: { codigoUnico: string; empresaPrestadorServicio: string; serviciosAutorizados?: string }) => {
@@ -237,7 +249,7 @@ const AuthorizationManagementView: React.FC = () => {
         a.id === selectedAuthForEdit.id ? { ...a, ...data } : a
       )
     );
-    setIsEditCodeModalOpen(false);
+    setIsEditCodesModalOpen(false);
     setSelectedAuthForEdit(null);
   };
 
@@ -828,14 +840,14 @@ const AuthorizationManagementView: React.FC = () => {
       )}
 
       {selectedAuthForEdit && (
-        <EditCodeModal
-          isOpen={isEditCodeModalOpen}
+        <EditCodesModal
+          isOpen={isEditCodesModalOpen}
           onClose={() => {
-            setIsEditCodeModalOpen(false);
+            setIsEditCodesModalOpen(false);
             setSelectedAuthForEdit(null);
           }}
           authorization={selectedAuthForEdit}
-          availableCodes={codigoOptions}
+          availableCodes={availableCodes[selectedAuthForEdit.identificacion] || []}
           onSave={handleSaveCodeEdit}
         />
       )}

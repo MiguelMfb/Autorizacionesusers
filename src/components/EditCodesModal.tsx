@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { Option, Authorization, UserAuthorizationDetail } from '../types';
 import { empresaOptions, lookupTarifas } from '../utils/api';
 
-interface EditCodeModalProps {
+interface EditCodesModalProps {
   isOpen: boolean;
   onClose: () => void;
   authorization: (Authorization | UserAuthorizationDetail) | null;
@@ -13,7 +13,7 @@ interface EditCodeModalProps {
   onSave: (data: { codigoUnico: string; empresaPrestadorServicio: string; serviciosAutorizados?: string; }) => void;
 }
 
-const EditCodeModal: React.FC<EditCodeModalProps> = ({
+const EditCodesModal: React.FC<EditCodesModalProps> = ({
   isOpen,
   onClose,
   authorization,
@@ -44,23 +44,33 @@ const EditCodeModal: React.FC<EditCodeModalProps> = ({
       );
       setUseExisting(true);
       setNewCode('');
+
+      if (authorization.serviciosAutorizados) {
+        void handleTarifaInputChange(authorization.serviciosAutorizados);
+      }
     }
   }, [authorization, availableCodes]);
 
-  const handleTarifaInputChange = async (inputValue: string) => {
+  const handleTarifaInputChange = (inputValue: string) => {
     if (!inputValue) {
       setTarifaOptions([]);
-      return;
+      return inputValue;
     }
-    setIsLoadingTarifas(true);
-    try {
-      const tarifas = await lookupTarifas(inputValue);
-      setTarifaOptions(tarifas.map(t => ({ value: t, label: t })));
-    } catch (err) {
-      console.error('Error fetching tarifas:', err);
-    } finally {
-      setIsLoadingTarifas(false);
-    }
+
+    const fetchTarifas = async () => {
+      setIsLoadingTarifas(true);
+      try {
+        const tarifas = await lookupTarifas(inputValue);
+        setTarifaOptions(tarifas.map(t => ({ value: t, label: t })));
+      } catch (err) {
+        console.error('Error fetching tarifas:', err);
+      } finally {
+        setIsLoadingTarifas(false);
+      }
+    };
+
+    void fetchTarifas();
+    return inputValue;
   };
 
   const handleGenerateCode = async () => {
@@ -200,5 +210,5 @@ const EditCodeModal: React.FC<EditCodeModalProps> = ({
   );
 };
 
-export default EditCodeModal;
+export default EditCodesModal;
 
