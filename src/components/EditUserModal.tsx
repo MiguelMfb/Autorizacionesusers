@@ -16,7 +16,7 @@ import {
   colombianCities
 } from '../utils/api';
 import AddAuthorizationModal from './AddAuthorizationModal';
-import EditCodeModal from './EditCodeModal';
+import EditCodesModal from './EditCodesModal';
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -804,7 +804,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       )}
 
       {selectedAuthForCodeEdit && (
-        <EditCodeModal
+        <EditCodesModal
           isOpen={isCodeEditModalOpen}
           onClose={handleCloseCodeEditModal}
           authorization={selectedAuthForCodeEdit ? {
