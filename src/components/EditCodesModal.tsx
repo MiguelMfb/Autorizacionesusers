@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { Option, Authorization, UserAuthorizationDetail } from '../types';
 import { empresaOptions, lookupTarifas } from '../utils/api';
 
-interface EditCodeModalProps {
+interface EditCodesModalProps {
   isOpen: boolean;
   onClose: () => void;
   authorization: (Authorization | UserAuthorizationDetail) | null;
@@ -13,7 +13,7 @@ interface EditCodeModalProps {
   onSave: (data: { codigoUnico: string; empresaPrestadorServicio: string; serviciosAutorizados?: string; }) => void;
 }
 
-const EditCodeModal: React.FC<EditCodeModalProps> = ({
+const EditCodesModal: React.FC<EditCodesModalProps> = ({
   isOpen,
   onClose,
   authorization,
@@ -44,6 +44,10 @@ const EditCodeModal: React.FC<EditCodeModalProps> = ({
       );
       setUseExisting(true);
       setNewCode('');
+
+      if (authorization.serviciosAutorizados) {
+        void handleTarifaInputChange(authorization.serviciosAutorizados);
+      }
     }
   }, [authorization, availableCodes]);
 
@@ -200,5 +204,5 @@ const EditCodeModal: React.FC<EditCodeModalProps> = ({
   );
 };
 
-export default EditCodeModal;
+export default EditCodesModal;
 
