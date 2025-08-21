@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { X, CheckCircle2, XCircle, Pencil, Upload, Plus } from 'lucide-react';
+import { X, CheckCircle2, XCircle, Pencil, Upload, Plus, Edit } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select from 'react-select';
@@ -16,6 +16,7 @@ import {
   colombianCities
 } from '../utils/api';
 import AddAuthorizationModal from './AddAuthorizationModal';
+import EditCodeModal from './EditCodeModal';
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -41,6 +42,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [selectedAuthorizationToEdit, setSelectedAuthorizationToEdit] = useState<UserAuthorizationDetail | null>(null);
   const [authorizationEditFormState, setAuthorizationEditFormState] = useState<Partial<UserAuthorizationDetail>>({});
   const [isAddAuthorizationModalOpen, setIsAddAuthorizationModalOpen] = useState(false);
+  const [selectedAuthForCodeEdit, setSelectedAuthForCodeEdit] = useState<UserAuthorizationDetail | null>(null);
+  const [isCodeEditModalOpen, setIsCodeEditModalOpen] = useState(false);
 
   useEffect(() => {
     setFormData({ ...userData });
@@ -183,6 +186,33 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const handleAuthorizationAdded = (newAuthorization: UserAuthorizationDetail) => {
     setAuthorizationsList(prev => [...prev, newAuthorization]);
     setIsAddAuthorizationModalOpen(false);
+  };
+
+  const handleOpenCodeEditModal = (authorization: UserAuthorizationDetail) => {
+    setSelectedAuthForCodeEdit(authorization);
+    setIsCodeEditModalOpen(true);
+  };
+
+  const handleCloseCodeEditModal = () => {
+    setIsCodeEditModalOpen(false);
+    setSelectedAuthForCodeEdit(null);
+  };
+
+  const handleSaveCodeEdit = (data: { codigoUnico: string; empresaPrestadorServicio: string; serviciosAutorizados?: string }) => {
+    if (!selectedAuthForCodeEdit) return;
+    setAuthorizationsList(prev =>
+      prev.map(a =>
+        a.id === selectedAuthForCodeEdit.id
+          ? {
+              ...a,
+              codigoUnico: data.codigoUnico,
+              empresaPrestadorServicio: data.empresaPrestadorServicio,
+              nombreTarifaAutorizada: data.serviciosAutorizados
+            }
+          : a
+      )
+    );
+    handleCloseCodeEditModal();
   };
 
   const formatDate = (date: Date) => {
@@ -508,12 +538,20 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                                     </div>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                                    <button
-                                      onClick={() => handleStartEditAuthorization(auth)}
-                                      className="text-green-500 hover:text-green-700"
-                                    >
-                                      <Pencil size={20} />
-                                    </button>
+                                    <div className="flex justify-center space-x-2">
+                                      <button
+                                        onClick={() => handleStartEditAuthorization(auth)}
+                                        className="text-green-500 hover:text-green-700"
+                                      >
+                                        <Pencil size={20} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleOpenCodeEditModal(auth)}
+                                        className="text-blue-500 hover:text-blue-700"
+                                      >
+                                        <Edit size={20} />
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))
@@ -762,6 +800,21 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           onClose={handleCloseAddAuthorizationModal}
           userData={userData}
           onAuthorizationAdded={handleAuthorizationAdded}
+        />
+      )}
+
+      {selectedAuthForCodeEdit && (
+        <EditCodeModal
+          isOpen={isCodeEditModalOpen}
+          onClose={handleCloseCodeEditModal}
+          authorization={selectedAuthForCodeEdit ? {
+            ...selectedAuthForCodeEdit,
+            nombreCompleto: userData.nombreCompleto,
+            identificacion: userData.identificacion,
+            serviciosAutorizados: selectedAuthForCodeEdit.nombreTarifaAutorizada
+          } as any : null}
+          availableCodes={Array.from(new Set(authorizationsList.map(a => a.codigoUnico))).map(code => ({ value: code, label: code }))}
+          onSave={handleSaveCodeEdit}
         />
       )}
     </>
