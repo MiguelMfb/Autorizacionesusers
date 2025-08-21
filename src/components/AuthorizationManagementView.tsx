@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Printer, FileSpreadsheet, ArrowUpDown, CheckCircle2, XCircle, SlidersHorizontal, Plus, Download, Filter, X } from 'lucide-react';
+import { Menu } from '@headlessui/react';
+import { Search, ArrowUpDown, CheckCircle2, XCircle, Plus, Download, X, MoreVertical, Eye, Edit } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { Authorization, FetchAuthorizationsParams, Option } from '../types';
 import { fetchAuthorizations, dependenciasList, getCityLabel, empresaOptions } from '../utils/api';
 import CreateAuthorizationModal from './CreateAuthorizationModal';
 import AuthorizationDetailView from './AuthorizationDetailView';
+import CancelCodeModal from './CancelCodeModal';
 import "react-datepicker/dist/react-datepicker.css";
 
 const vigenciaOptions: Option[] = [
@@ -47,6 +49,10 @@ const AuthorizationManagementView: React.FC = () => {
   // Certificate functionality states
   const [selectedAuthorizations, setSelectedAuthorizations] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Cancel code modal state
+  const [selectedAuthForCancel, setSelectedAuthForCancel] = useState<Authorization | null>(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   
   // Load authorizations
   const loadAuthorizations = useCallback(async () => {
@@ -209,6 +215,24 @@ const AuthorizationManagementView: React.FC = () => {
   const handleViewAuthorizationDetail = (authorizationId: string) => {
     setSelectedAuthorizationId(authorizationId);
     setCurrentView('detail');
+  };
+
+  // Placeholder edit handler (navigates to detail for now)
+  const handleEditAuthorization = (authorizationId: string) => {
+    handleViewAuthorizationDetail(authorizationId);
+  };
+
+  const handleCancelAuthorizationClick = (auth: Authorization) => {
+    setSelectedAuthForCancel(auth);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (selectedAuthForCancel) {
+      setAuthorizations(prev => prev.filter(a => a.id !== selectedAuthForCancel.id));
+      setSelectedAuthForCancel(null);
+      setIsCancelModalOpen(false);
+    }
   };
 
   const handleBackToList = () => {
@@ -418,6 +442,11 @@ const AuthorizationManagementView: React.FC = () => {
       
       {/* Table Section */}
       <div className="mt-6">
+        {error && (
+          <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -632,12 +661,48 @@ const AuthorizationManagementView: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button 
-                          onClick={() => handleViewAuthorizationDetail(auth.id)}
-                          className="text-green-500 hover:text-green-700"
-                        >
-                          <SlidersHorizontal size={18} />
-                        </button>
+                        <Menu as="div" className="relative inline-block text-left">
+                          <Menu.Button className="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-full hover:bg-gray-100">
+                            <MoreVertical size={18} />
+                          </Menu.Button>
+                          <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                            <div className="py-1">
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleViewAuthorizationDetail(auth.id)}
+                                    className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                                  >
+                                    <Eye size={16} className="mr-3" />
+                                    Ver detalle
+                                  </button>
+                                )}
+                              </Menu.Item>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleEditAuthorization(auth.id)}
+                                    className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                                  >
+                                    <Edit size={16} className="mr-3" />
+                                    Editar
+                                  </button>
+                                )}
+                              </Menu.Item>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleCancelAuthorizationClick(auth)}
+                                    className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100`}
+                                  >
+                                    <XCircle size={16} className="mr-3" />
+                                    Anular código
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            </div>
+                          </Menu.Items>
+                        </Menu>
                       </td>
                     </tr>
                   ))
@@ -730,6 +795,18 @@ const AuthorizationManagementView: React.FC = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
+
+      {selectedAuthForCancel && (
+        <CancelCodeModal
+          isOpen={isCancelModalOpen}
+          onClose={() => {
+            setIsCancelModalOpen(false);
+            setSelectedAuthForCancel(null);
+          }}
+          onConfirm={handleConfirmCancel}
+          authorization={selectedAuthForCancel}
+        />
+      )}
     </div>
   );
 };
