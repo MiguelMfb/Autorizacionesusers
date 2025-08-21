@@ -8,6 +8,7 @@ import { fetchAuthorizations, dependenciasList, getCityLabel, empresaOptions } f
 import CreateAuthorizationModal from './CreateAuthorizationModal';
 import AuthorizationDetailView from './AuthorizationDetailView';
 import CancelCodeModal from './CancelCodeModal';
+import EditCodeModal from './EditCodeModal';
 import "react-datepicker/dist/react-datepicker.css";
 
 const vigenciaOptions: Option[] = [
@@ -53,6 +54,11 @@ const AuthorizationManagementView: React.FC = () => {
   // Cancel code modal state
   const [selectedAuthForCancel, setSelectedAuthForCancel] = useState<Authorization | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
+  // Edit code modal state
+  const [selectedAuthForEdit, setSelectedAuthForEdit] = useState<Authorization | null>(null);
+  const [isEditCodeModalOpen, setIsEditCodeModalOpen] = useState(false);
+
   
   // Load authorizations
   const loadAuthorizations = useCallback(async () => {
@@ -217,9 +223,20 @@ const AuthorizationManagementView: React.FC = () => {
     setCurrentView('detail');
   };
 
-  // Placeholder edit handler (navigates to detail for now)
-  const handleEditAuthorization = (authorizationId: string) => {
-    handleViewAuthorizationDetail(authorizationId);
+  const handleEditAuthorization = (authorization: Authorization) => {
+    setSelectedAuthForEdit(authorization);
+    setIsEditCodeModalOpen(true);
+  };
+
+  const handleSaveCodeEdit = (data: { codigoUnico: string; empresaPrestadorServicio: string; serviciosAutorizados?: string }) => {
+    if (!selectedAuthForEdit) return;
+    setAuthorizations(prev =>
+      prev.map(a =>
+        a.id === selectedAuthForEdit.id ? { ...a, ...data } : a
+      )
+    );
+    setIsEditCodeModalOpen(false);
+    setSelectedAuthForEdit(null);
   };
 
   const handleCancelAuthorizationClick = (auth: Authorization) => {
@@ -681,7 +698,7 @@ const AuthorizationManagementView: React.FC = () => {
                               <Menu.Item>
                                 {({ active }) => (
                                   <button
-                                    onClick={() => handleEditAuthorization(auth.id)}
+                                    onClick={() => handleEditAuthorization(auth)}
                                     className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
                                   >
                                     <Edit size={16} className="mr-3" />
@@ -805,6 +822,29 @@ const AuthorizationManagementView: React.FC = () => {
           }}
           onConfirm={handleConfirmCancel}
           authorization={selectedAuthForCancel}
+        />
+      )}
+
+      {selectedAuthForEdit && (
+        <EditCodeModal
+          isOpen={isEditCodeModalOpen}
+          onClose={() => {
+            setIsEditCodeModalOpen(false);
+            setSelectedAuthForEdit(null);
+          }}
+          authorization={selectedAuthForEdit}
+          availableCodes={Array.from(
+            new Set(
+              authorizations
+                .filter(
+                  a =>
+                    a.identificacion === selectedAuthForEdit.identificacion &&
+                    a.codigoUnico !== selectedAuthForEdit.codigoUnico
+                )
+                .map(a => a.codigoUnico)
+            )
+          ).map(code => ({ value: code, label: code }))}
+          onSave={handleSaveCodeEdit}
         />
       )}
     </div>

@@ -1,5 +1,3 @@
-import { type } from "os";
-
 // Base interfaces
 interface BaseUser {
   id: string;

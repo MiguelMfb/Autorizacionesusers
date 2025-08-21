@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, CheckCircle2, Plus, Eye, Edit2, Trash2, ArrowUpDown, FileText, Filter, FileSpreadsheet, Download } from 'lucide-react';
+import { Search, CheckCircle2, Plus, Eye, Edit2, Trash2, ArrowUpDown, Filter, FileSpreadsheet, Download } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import Select from 'react-select';
-import { UserManagementSummary, SortConfig, PaginationConfig, Option, UserAuthorizationDetail } from '../types';
-import { fetchUserManagementData, dependenciasList, empresaOptions, fetchAuthorizationsForUser } from '../utils/api';
+import { UserManagementSummary, SortConfig, PaginationConfig, Option } from '../types';
+import { fetchUserManagementData, dependenciasList } from '../utils/api';
 import EditUserModal from './EditUserModal';
-import CertificateModal from './CertificateModal';
 
 interface UserManagementViewProps {
   onNavigateToDetail: (identifier: string) => void;
@@ -34,9 +33,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({
   // Modal states
   const [selectedUser, setSelectedUser] = useState<UserManagementSummary | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
-  const [selectedUserAuthorizations, setSelectedUserAuthorizations] = useState<UserAuthorizationDetail[]>([]);
-  
   // Filter panel state
   const [showFilters, setShowFilters] = useState(true);
   
@@ -148,17 +144,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({
   const handleDeleteConfirmation = (userId: string) => {
     if (window.confirm('¿Está seguro de que desea eliminar este usuario?')) {
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-    }
-  };
-
-  const handleOpenCertificateModal = async (userId: string) => {
-    try {
-      const authorizations = await fetchAuthorizationsForUser(userId);
-      setSelectedUserAuthorizations(authorizations);
-      setIsCertificateModalOpen(true);
-    } catch (error) {
-      console.error('Error fetching authorizations:', error);
-      alert('Error al cargar las autorizaciones del usuario');
     }
   };
 
@@ -567,13 +552,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({
         />
       )}
 
-      {isCertificateModalOpen && (
-        <CertificateModal
-          isOpen={isCertificateModalOpen}
-          onClose={() => setIsCertificateModalOpen(false)}
-          authorizations={selectedUserAuthorizations}
-        />
-      )}
     </div>
   );
 };

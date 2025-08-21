@@ -22,7 +22,6 @@ interface MenuItem {
 interface SidebarProps {
   isCollapsed: boolean;
   activeItem: string;
-  onToggleCollapse: () => void;
   onNavigate: (viewKey: string) => void;
 }
 
@@ -39,7 +38,6 @@ const menuItems: MenuItem[] = [
 const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   activeItem,
-  onToggleCollapse,
   onNavigate
 }) => {
   return (

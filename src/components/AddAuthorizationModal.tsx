@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { X, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { User, Option, UserAuthorizationDetail, AuthorizationGroup } from '../types';
@@ -43,7 +43,6 @@ const AddAuthorizationModal: React.FC<AddAuthorizationModalProps> = ({
   });
 
   const [tarifaOptions, setTarifaOptions] = useState<Option[]>([]);
-  const [tarifaSearchTerm, setTarifaSearchTerm] = useState<string>('');
   const [isLoadingTarifas, setIsLoadingTarifas] = useState<boolean>(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -108,8 +107,6 @@ const AddAuthorizationModal: React.FC<AddAuthorizationModalProps> = ({
   };
 
   const handleTarifaInputChange = async (inputValue: string) => {
-    setTarifaSearchTerm(inputValue);
-    
     if (!inputValue) {
       setTarifaOptions([]);
       return;

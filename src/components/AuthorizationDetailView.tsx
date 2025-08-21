@@ -4,7 +4,7 @@ import { Menu, Dialog } from '@headlessui/react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { Authorization, UserAuthorizationDetail, Option } from '../types';
-import { fetchAuthorizationById, fetchAuthorizationsForUser, colombianCities, empresaOptions } from '../utils/api';
+import { colombianCities } from '../utils/api';
 import CreateAuthorizationModal from './CreateAuthorizationModal';
 import "react-datepicker/dist/react-datepicker.css";
 

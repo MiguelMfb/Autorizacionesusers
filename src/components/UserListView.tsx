@@ -150,6 +150,10 @@ const UserListView: React.FC<UserListViewProps> = ({ onNavigateToDetail }) => {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>
+      )}
+
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">

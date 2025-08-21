@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Search, Filter, X, Download, Plus } from 'lucide-react';
+import { ArrowLeft, Search, Filter, X, Download } from 'lucide-react';
 import DatePicker from 'react-datepicker';
-import Select from 'react-select';
-import { UserDetailInfo, UserAuthorizationDetail, FetchUserDetailParams, Option } from '../types';
-import { fetchUserDetailInfo, fetchUserAuthorizationDetails, dependenciasList, empresaOptions } from '../utils/api';
+import { UserDetailInfo, UserAuthorizationDetail, FetchUserDetailParams } from '../types';
+import { fetchUserDetailInfo, fetchUserAuthorizationDetails } from '../utils/api';
 import CertificateModal from './CertificateModal';
 import "react-datepicker/dist/react-datepicker.css";
 
