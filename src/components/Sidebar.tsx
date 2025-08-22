@@ -22,13 +22,12 @@ interface MenuItem {
 interface SidebarProps {
   isCollapsed: boolean;
   activeItem: string;
-  onToggleCollapse: () => void;
   onNavigate: (viewKey: string) => void;
 }
 
 const menuItems: MenuItem[] = [
   { key: 'panel', label: 'Panel interactivo', icon: PieChart, enabled: false },
-  { key: 'servicios', label: 'Gestión de servicios', icon: Briefcase, enabled: false },
+  { key: 'servicios', label: 'Gestión de servicios', icon: Briefcase, enabled: true },
   { key: 'conductores', label: 'Gestión de Conductores', icon: Car, enabled: false },
   { key: 'usuarios', label: 'Gestión de usuarios', icon: Users, enabled: true },
   { key: 'autorizaciones', label: 'Gestión de autorizaciones', icon: FileCheck, enabled: true },
@@ -39,7 +38,6 @@ const menuItems: MenuItem[] = [
 const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   activeItem,
-  onToggleCollapse,
   onNavigate
 }) => {
   return (
@@ -67,7 +65,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.key}
-              onClick={() => item.enabled && onNavigate(item.key)}
+              onClick={() => {
+                if (!item.enabled) return;
+                if (item.key === 'servicios') {
+                  window.open('https://tangerine-yeot-25b9bd.netlify.app/', '_blank');
+                } else {
+                  onNavigate(item.key);
+                }
+              }}
               disabled={!item.enabled}
               className={`
                 w-full flex items-center px-4 py-3 transition-colors duration-200

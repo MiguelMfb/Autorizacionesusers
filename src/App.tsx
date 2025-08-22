@@ -75,7 +75,6 @@ function App() {
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         activeItem={activeView}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         onNavigate={handleNavigate}
       />
       
