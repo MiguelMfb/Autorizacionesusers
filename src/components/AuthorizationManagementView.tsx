@@ -244,6 +244,31 @@ const AuthorizationManagementView: React.FC = () => {
     }
   };
 
+  // Handle single certificate download for an authorization
+  const handleDownloadCertificate = async (authorization: Authorization) => {
+    setIsGenerating(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Simulate file download for the specific authorization
+      const blob = new Blob(['Certificate content'], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificado_autorizacion_${authorization.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+      alert('Error al generar el certificado');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Handle authorization detail view
   const handleViewAuthorizationDetail = (authorizationId: string) => {
     setSelectedAuthorizationId(authorizationId);
@@ -801,6 +826,17 @@ const AuthorizationManagementView: React.FC = () => {
                                   >
                                     <Edit size={16} className="mr-3" />
                                     Editar
+                                  </button>
+                                )}
+                              </Menu.Item>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleDownloadCertificate(auth)}
+                                    className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                                  >
+                                    <Download size={16} className="mr-3" />
+                                    Descargar certificado
                                   </button>
                                 )}
                               </Menu.Item>
